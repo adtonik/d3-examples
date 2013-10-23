@@ -5,15 +5,37 @@
 <script src="dist/simple-map-d3.js" charset="utf-8"></script>
 
 <div class="simple-map-d3-mn-pop-map" style="background-color: #FFFFFF; width: 100%;
-  height: 360px; border: 1px solid #898989; margin: 0 0 1em 0;">
+  height: 460px">
 </div>
 
 <script>
-  var map = new SimpleMapD3({
-    container: '.simple-map-d3-mn-pop-map',
-    datasource: 'example-data/mn-county-2010.geo.json',
-    colorOn: true,
-    colorProperty: 'POPULATION',
-    legendFormatter: d3.format(',f0')
+  d3.json('nielsentopo.json', function(err, dma) {
+    var nielsen = dma.objects.nielsen_dma.geometries;
+
+    d3.json("tv.json", function(error, tv){
+      for (var i = 0; i < nielsen.length; i++){
+        var dma_code = nielsen[i].id;
+        for (key in tv[dma_code]){
+          nielsen[i].properties[key] = tv[dma_code][key];
+        }
+      }
+
+      dma.objects.nielsen_dma.geometries = nielsen;
+
+      var map = new SimpleMapD3({
+        container: '.simple-map-d3-mn-pop-map',
+        data: dma,
+        colorOn: true,
+        colorProperty: 'TV Homes',
+        legendFormatter: d3.format(',f0'),
+        colorSet: 'Blues',
+        canvasDragOn: true,
+        tooltipContent: function(d) {
+          var p = d.properties;
+          return '<h3>' + p.dma1 + ' (Rank: ' + p["Rank"] + ')' + '</h3>' +
+            p["TV Homes"] + ' total homes';
+        }
+      });
+    });
   });
 </script>
